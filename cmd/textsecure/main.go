@@ -91,6 +91,7 @@ var (
 type RedisMessage struct {
 	To   string
 	Body string
+	GroupId string
 }
 
 func readLine(prompt string) string {
@@ -232,10 +233,13 @@ func messageHandler(msg *textsecure.Message) {
 	if redismode {
 		to = msg.Source()
 		if msg.Group() != nil {
-			to = msg.Group().Hexid
+			groupId = msg.Group().Hexid
+		}
+		else {
+			groupId = ""
 		}
 		log.Infof("Publishing to redis, To: %s, Msg: %s", to, msg.Message())
-		rmsg := RedisMessage{to, msg.Message()}
+		rmsg := RedisMessage{to, msg.Message(), groupId}
 		sendMessageToRedis(rmsg)
 	}
 }
