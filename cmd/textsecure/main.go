@@ -234,8 +234,7 @@ func messageHandler(msg *textsecure.Message) {
 		to = msg.Source()
 		if msg.Group() != nil {
 			groupId = msg.Group().Hexid
-		}
-		else {
+		} else {
 			groupId = ""
 		}
 		log.Infof("Publishing to redis, To: %s, Msg: %s", to, msg.Message())
