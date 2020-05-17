@@ -231,6 +231,7 @@ func messageHandler(msg *textsecure.Message) {
 		go conversationLoop(isGroup)
 	}
 	if redismode {
+		var groupId string
 		to = msg.Source()
 		if msg.Group() != nil {
 			groupId = msg.Group().Hexid
