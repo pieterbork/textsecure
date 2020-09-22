@@ -6,6 +6,7 @@ package textsecure
 import (
 	"bytes"
 	"crypto/sha256"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -18,11 +19,14 @@ import (
 
 // getAttachment downloads an encrypted attachment blob from the given URL
 func getAttachment(url string) (io.ReadCloser, error) {
+	customTransport := http.DefaultTransport.(*http.Transport).Clone()
+	customTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	c := &http.Client{Transport: customTransport}
 	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("Host", SERVICE_REFLECTOR_HOST)
 	req.Header.Add("Content-Type", "application/octet-stream")
 
-	client := newHTTPClient()
-	resp, err := client.Do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +97,7 @@ func uploadAttachment(r io.Reader, ct string) (*att, error) {
 var ErrInvalidMACForAttachment = errors.New("invalid MAC for attachment")
 
 func handleSingleAttachment(a *textsecure.AttachmentPointer) (*Attachment, error) {
-	loc, err := getAttachmentLocation(*a.Id)
+	loc, err := getAttachmentLocation(a.GetCdnId(), a.GetCdnKey(), a.GetCdnNumber())
 	if err != nil {
 		return nil, err
 	}

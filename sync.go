@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/prometheus/common/log"
 	"github.com/signal-golang/textsecure/protobuf"
-	log "github.com/sirupsen/logrus"
 )
 
 // handleSyncMessage handles an incoming SyncMessage.
@@ -157,13 +157,16 @@ func sendContactUpdate() error {
 	sm := &signalservice.SyncMessage{
 		Contacts: &signalservice.SyncMessage_Contacts{
 			Blob: &signalservice.AttachmentPointer{
-				Id:          &a.id,
+				AttachmentIdentifier: &signalservice.AttachmentPointer_CdnId{
+					CdnId: a.id,
+				},
 				ContentType: &a.ct,
-				Key:         a.keys,
+				Key:         a.keys[:],
+				Digest:      a.digest[:],
+				Size:        &a.size,
 			},
 		},
 	}
-
 	_, err = sendSyncMessage(sm, nil)
 	return err
 }
@@ -201,13 +204,16 @@ func sendGroupUpdate() error {
 	sm := &signalservice.SyncMessage{
 		Groups: &signalservice.SyncMessage_Groups{
 			Blob: &signalservice.AttachmentPointer{
-				Id:          &a.id,
+				AttachmentIdentifier: &signalservice.AttachmentPointer_CdnId{
+					CdnId: a.id,
+				},
 				ContentType: &a.ct,
-				Key:         a.keys,
+				Key:         a.keys[:],
+				Digest:      a.digest[:],
+				Size:        &a.size,
 			},
 		},
 	}
-
 	_, err = sendSyncMessage(sm, nil)
 	return err
 }
